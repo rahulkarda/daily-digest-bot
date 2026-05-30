@@ -98,18 +98,16 @@ async function summarizeAll(sections) {
 
   console.log('[summarize] Calling Gemini Flash...');
 
-  const [tech, ai, curiosity, github] = await Promise.allSettled([
-    summarizeBatch(sections.tech, 'Tech & Dev (HN + Reddit)'),
-    (async () => { await delay(500); return summarizeBatch(sections.ai, 'AI & Machine Learning'); })(),
-    (async () => { await delay(1000); return summarizeBatch(sections.curiosity, 'Curiosity & Science'); })(),
-    (async () => { await delay(1500); return summarizeGitHub(sections.github); })(),
+  const [ai_models, ai_news, til] = await Promise.allSettled([
+    summarizeBatch(sections.ai_models, 'AI Models & Research (r/LocalLLaMA, r/MachineLearning)'),
+    (async () => { await delay(500); return summarizeBatch(sections.ai_news, 'AI News & Lab Updates (r/singularity, r/OpenAI, r/ClaudeAI, r/Gemini)'); })(),
+    (async () => { await delay(1000); return summarizeBatch(sections.til, 'Today I Learned & Fascinating Discoveries'); })(),
   ]);
 
   return {
-    tech: tech.status === 'fulfilled' ? tech.value : sections.tech,
-    ai: ai.status === 'fulfilled' ? ai.value : sections.ai,
-    curiosity: curiosity.status === 'fulfilled' ? curiosity.value : sections.curiosity,
-    github: github.status === 'fulfilled' ? github.value : sections.github,
+    ai_models: ai_models.status === 'fulfilled' ? ai_models.value : sections.ai_models,
+    ai_news: ai_news.status === 'fulfilled' ? ai_news.value : sections.ai_news,
+    til: til.status === 'fulfilled' ? til.value : sections.til,
   };
 }
 

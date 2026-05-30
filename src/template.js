@@ -1,10 +1,9 @@
 'use strict';
 
 const SECTIONS_CONFIG = {
-  tech: { label: 'Tech & Dev', emoji: '⚡', color: '#3B82F6', light: '#EFF6FF', border: '#BFDBFE' },
-  ai: { label: 'AI & Machine Learning', emoji: '🤖', color: '#8B5CF6', light: '#F5F3FF', border: '#DDD6FE' },
-  curiosity: { label: 'Curiosity & Science', emoji: '🔬', color: '#10B981', light: '#ECFDF5', border: '#A7F3D0' },
-  github: { label: 'GitHub Trending', emoji: '⭐', color: '#F59E0B', light: '#FFFBEB', border: '#FDE68A' },
+  ai_models: { label: 'AI Models & Research', emoji: '🧠', color: '#8B5CF6', light: '#F5F3FF', border: '#DDD6FE' },
+  ai_news:   { label: 'AI News & Lab Updates', emoji: '🤖', color: '#3B82F6', light: '#EFF6FF', border: '#BFDBFE' },
+  til:       { label: 'Today I Learned', emoji: '💡', color: '#10B981', light: '#ECFDF5', border: '#A7F3D0' },
 };
 
 function escapeHtml(str) {
@@ -100,15 +99,15 @@ function renderSection(items, sectionKey) {
     <tr><td style="border-top:1px solid #F3F4F6;padding-bottom:24px;"></td></tr>`;
 }
 
-function renderEmail({ tech = [], ai = [], curiosity = [], github = [], date, totalItems }) {
+function renderEmail({ ai_models = [], ai_news = [], til = [], date, totalItems }) {
   const dateStr = date || new Date().toLocaleDateString('en-US', {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
   });
 
-  const techSection = renderSection(tech, 'tech');
-  const aiSection = renderSection(ai, 'ai');
-  const curiositySection = renderSection(curiosity, 'curiosity');
-  const githubSection = renderSection(github, 'github');
+  const techSection = ''
+  const aiSection = ''
+  const curiositySection = ''
+  const githubSection = ''
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -166,10 +165,9 @@ function renderEmail({ tech = [], ai = [], curiosity = [], github = [], date, to
                     <!-- Section pills -->
                     <table cellpadding="0" cellspacing="0" border="0" style="margin-top:20px;">
                       <tr>
-                        ${tech.length ? '<td style="padding-right:8px;"><span style="background:rgba(59,130,246,0.3);color:#93C5FD;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid rgba(59,130,246,0.4);">⚡ Tech</span></td>' : ''}
-                        ${ai.length ? '<td style="padding-right:8px;"><span style="background:rgba(139,92,246,0.3);color:#C4B5FD;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid rgba(139,92,246,0.4);">🤖 AI/ML</span></td>' : ''}
-                        ${curiosity.length ? '<td style="padding-right:8px;"><span style="background:rgba(16,185,129,0.3);color:#6EE7B7;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid rgba(16,185,129,0.4);">🔬 Curiosity</span></td>' : ''}
-                        ${github.length ? '<td><span style="background:rgba(245,158,11,0.3);color:#FCD34D;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid rgba(245,158,11,0.4);">⭐ GitHub</span></td>' : ''}
+                        ${ai_models.length ? '<td style="padding-right:8px;"><span style="background:rgba(139,92,246,0.3);color:#C4B5FD;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid rgba(139,92,246,0.4);">🧠 AI Models</span></td>' : ''}
+                        ${ai_news.length ? '<td style="padding-right:8px;"><span style="background:rgba(59,130,246,0.3);color:#93C5FD;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid rgba(59,130,246,0.4);">🤖 AI News</span></td>' : ''}
+                        ${til.length ? '<td><span style="background:rgba(16,185,129,0.3);color:#6EE7B7;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid rgba(16,185,129,0.4);">💡 TIL</span></td>' : ''}
                       </tr>
                     </table>
                   </td>
@@ -187,10 +185,9 @@ function renderEmail({ tech = [], ai = [], curiosity = [], github = [], date, to
                   <td style="padding:28px 28px 12px 28px;">
                     <table width="100%" cellpadding="0" cellspacing="0" border="0">
 
-                      ${techSection}
-                      ${aiSection}
-                      ${curiositySection}
-                      ${githubSection}
+                      ${renderSection(ai_models, 'ai_models')}
+                      ${renderSection(ai_news, 'ai_news')}
+                      ${renderSection(til, 'til')}
 
                     </table>
                   </td>
