@@ -18,9 +18,9 @@ async function runDigest({ dryRun = false, saveHtml = false } = {}) {
   const redditData = await fetchReddit();
 
   const rawSections = {
-    ai_models: (redditData.ai_models || []).slice(0, 8),
-    ai_news:   (redditData.ai_news   || []).slice(0, 8),
-    til:       (redditData.til       || []).slice(0, 8),
+    ai_models: (redditData.ai_models || []).slice(0, 3),
+    ai_news:   (redditData.ai_news   || []).slice(0, 3),
+    til:       (redditData.til       || []).slice(0, 3),
   };
 
   const totalRaw = Object.values(rawSections).reduce((s, arr) => s + arr.length, 0);
