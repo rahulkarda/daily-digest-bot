@@ -15,16 +15,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: 'digest-bot/package-lock.json'
+          node-version: '22'
 
       - name: Install dependencies
-        working-directory: digest-bot
         run: npm ci
 
       - name: Send Daily Digest
-        working-directory: digest-bot
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
