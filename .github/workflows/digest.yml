@@ -1,0 +1,33 @@
+name: Daily Digest
+
+on:
+  schedule:
+    # 10:00am IST = 4:30am UTC
+    - cron: '30 4 * * *'
+  workflow_dispatch:  # Manual trigger from GitHub UI
+
+jobs:
+  send-digest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'digest-bot/package-lock.json'
+
+      - name: Install dependencies
+        working-directory: digest-bot
+        run: npm ci
+
+      - name: Send Daily Digest
+        working-directory: digest-bot
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          DIGEST_TO: ${{ secrets.DIGEST_TO }}
+        run: node index.js --now
