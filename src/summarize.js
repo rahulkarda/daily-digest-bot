@@ -18,7 +18,7 @@ async function summarizeBatch(items, sectionLabel) {
 
   try {
     const client = getClient();
-    const model = client.getGenerativeModel({ model: 'gemini-2.0-flash-lite' });
+    const model = client.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
     const itemList = items
       .map((item, i) => `${i + 1}. TITLE: "${item.title}"\n   EXCERPT: "${item.excerpt || 'No excerpt'}"`)
@@ -62,7 +62,7 @@ async function summarizeGitHub(repos) {
 
   try {
     const client = getClient();
-    const model = client.getGenerativeModel({ model: 'gemini-2.0-flash-lite' });
+    const model = client.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
     const itemList = repos
       .map((r, i) => `${i + 1}. REPO: "${r.title}"\n   DESCRIPTION: "${r.excerpt || 'No description'}"`)
