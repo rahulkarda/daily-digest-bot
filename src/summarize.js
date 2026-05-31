@@ -12,6 +12,13 @@ function getClient() {
   return genAI;
 }
 
+// Sanitize a string for safe interpolation into a prompt:
+// strip newlines and bare quotes that could break delimiter boundaries
+function sanitizeForPrompt(str) {
+  if (!str) return '';
+  return String(str).replace(/[\r\n]+/g, ' ').replace(/"/g, "'");
+}
+
 // Summarize a batch of items from one section in a single API call
 async function summarizeBatch(items, sectionLabel) {
   if (!items.length) return items;
@@ -21,7 +28,7 @@ async function summarizeBatch(items, sectionLabel) {
     const model = client.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
     const itemList = items
-      .map((item, i) => `${i + 1}. TITLE: "${item.title}"\n   EXCERPT: "${item.excerpt || 'No excerpt'}"`)
+      .map((item, i) => `${i + 1}. TITLE: "${sanitizeForPrompt(item.title)}"\n   EXCERPT: "${sanitizeForPrompt(item.excerpt || 'No excerpt')}"`)
       .join('\n\n');
 
     const prompt = `You are summarizing top stories for a daily digest email.
@@ -41,6 +48,10 @@ Respond with ONLY a JSON array of strings, one summary per item, in the same ord
     if (!match) throw new Error('No JSON array in response');
 
     const summaries = JSON.parse(match[0]);
+
+    if (summaries.length !== items.length) {
+      console.warn(`[summarize] Length mismatch for ${sectionLabel}: expected ${items.length}, got ${summaries.length}. Falling back for missing items.`);
+    }
 
     return items.map((item, i) => ({
       ...item,
@@ -65,7 +76,7 @@ async function summarizeGitHub(repos) {
     const model = client.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
     const itemList = repos
-      .map((r, i) => `${i + 1}. REPO: "${r.title}"\n   DESCRIPTION: "${r.excerpt || 'No description'}"`)
+      .map((r, i) => `${i + 1}. REPO: "${sanitizeForPrompt(r.title)}"\n   DESCRIPTION: "${sanitizeForPrompt(r.excerpt || 'No description')}"`)
       .join('\n\n');
 
     const prompt = `Summarize these GitHub trending repos for developers in a daily digest.
@@ -82,6 +93,11 @@ Respond with ONLY a JSON array of strings in the same order.`;
     if (!match) throw new Error('No JSON array in response');
 
     const summaries = JSON.parse(match[0]);
+
+    if (summaries.length !== repos.length) {
+      console.warn(`[summarize] Length mismatch for GitHub: expected ${repos.length}, got ${summaries.length}. Falling back for missing items.`);
+    }
+
     return repos.map((repo, i) => ({
       ...repo,
       summary: summaries[i] || repo.excerpt?.slice(0, 120) || repo.title,
@@ -92,23 +108,78 @@ Respond with ONLY a JSON array of strings in the same order.`;
   }
 }
 
-// Main: summarize all sections with a small delay between calls to respect RPM
+// Generate a top-3 TL;DR across all sections
+async function generateTldr(sections) {
+  try {
+    const client = getClient();
+    const model = client.getGenerativeModel({ model: 'gemini-2.5-flash' });
+
+    const allItems = [
+      ...sections.ai_models,
+      ...sections.ai_news,
+      ...sections.til,
+    ];
+
+    const itemList = allItems
+      .map((item, i) => `${i + 1}. [${item.source}] "${sanitizeForPrompt(item.title)}" — ${sanitizeForPrompt(item.summary || item.excerpt || '')}`)
+      .join('\n');
+
+    const prompt = `You are an editor writing a quick TL;DR for a daily digest email.
+
+From these ${allItems.length} stories, pick the 3 most interesting and write a punchy one-sentence highlight for each. Lead with what makes it exciting. Be specific, not generic.
+
+${itemList}
+
+Respond with ONLY a JSON array of exactly 3 strings. Example:
+["Highlight 1.", "Highlight 2.", "Highlight 3."]`;
+
+    const result = await model.generateContent(prompt);
+    const text = result.response.text().trim();
+    const match = text.match(/\[[\s\S]*\]/);
+    if (!match) throw new Error('No JSON array in response');
+
+    const picks = JSON.parse(match[0]);
+    return picks.slice(0, 3);
+  } catch (err) {
+    console.warn('[summarize] TL;DR generation failed:', err.message);
+    return null;
+  }
+}
+
+// Main: summarize all sections sequentially with delays between calls to
+// enforce minimum inter-call gaps (staggered Promise.allSettled only controls
+// start time, not completion gaps)
 async function summarizeAll(sections) {
   const delay = (ms) => new Promise((r) => setTimeout(r, ms));
 
   console.log('[summarize] Calling Gemini Flash...');
 
-  const [ai_models, ai_news, til] = await Promise.allSettled([
-    summarizeBatch(sections.ai_models, 'AI Models & Research (r/LocalLLaMA, r/MachineLearning)'),
-    (async () => { await delay(500); return summarizeBatch(sections.ai_news, 'AI News & Lab Updates (r/singularity, r/OpenAI, r/ClaudeAI, r/Gemini)'); })(),
-    (async () => { await delay(1000); return summarizeBatch(sections.til, 'Today I Learned & Fascinating Discoveries'); })(),
-  ]);
+  const ai_modelsResult = await summarizeBatch(
+    sections.ai_models,
+    'AI Models & Research (r/LocalLLaMA, r/MachineLearning)',
+  );
+  await delay(500);
+
+  const ai_newsResult = await summarizeBatch(
+    sections.ai_news,
+    'AI News & Lab Updates (r/singularity, r/OpenAI, r/ClaudeAI, r/Gemini)',
+  );
+  await delay(500);
+
+  const tilResult = await summarizeBatch(
+    sections.til,
+    'Today I Learned & Fascinating Discoveries',
+  );
+
+  await delay(500);
+  const tldr = await generateTldr({ ai_models: ai_modelsResult, ai_news: ai_newsResult, til: tilResult });
 
   return {
-    ai_models: ai_models.status === 'fulfilled' ? ai_models.value : sections.ai_models,
-    ai_news: ai_news.status === 'fulfilled' ? ai_news.value : sections.ai_news,
-    til: til.status === 'fulfilled' ? til.value : sections.til,
+    ai_models: ai_modelsResult,
+    ai_news: ai_newsResult,
+    til: tilResult,
+    tldr,
   };
 }
 
-module.exports = { summarizeAll };
+module.exports = { summarizeAll, generateTldr };

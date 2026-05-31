@@ -29,17 +29,26 @@ async function sendDigest(html, { subject, date } = {}) {
   });
 
   const mailOptions = {
-    from: `"Daily Digest 📰" <${GMAIL_USER}>`,
+    from: `"Daily Digest" <${GMAIL_USER}>`,
     to,
-    subject: subject || `📰 Your Daily Digest — ${dateStr}`,
+    subject: subject || `Your Daily Digest — ${dateStr}`,
     html,
     // Plain text fallback
     text: 'Your daily digest is ready. Please view this email in an HTML-capable client.',
   };
 
   const transport = getTransporter();
-  const info = await transport.sendMail(mailOptions);
-  console.log(`[mailer] Email sent to ${to} — Message ID: ${info.messageId}`);
+  let info;
+  try {
+    info = await transport.sendMail(mailOptions);
+  } catch (err) {
+    // Invalidate the cached transporter so the next run re-creates it
+    // (prevents a bad-credentials failure from persisting across cron runs)
+    transporter = null;
+    throw err;
+  }
+  // Log message ID only — avoid writing the recipient address to stdout
+  console.log(`[mailer] Email sent — Message ID: ${info.messageId}`);
   return info;
 }
 

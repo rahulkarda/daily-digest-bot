@@ -18,8 +18,17 @@ function parseSendTime(timeStr = '08:00') {
 
 const { hour, minute } = parseSendTime(process.env.SEND_TIME);
 const cronExpr = `${minute} ${hour} * * *`;
+const timezone = process.env.SEND_TIMEZONE || 'UTC';
 
 async function main() {
+  // Validate credentials before attempting any send (even --now without --dry)
+  if (!dryRun) {
+    if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+      console.error('Error: GMAIL_USER and GMAIL_APP_PASSWORD must both be set in .env');
+      process.exit(1);
+    }
+  }
+
   if (runNow || dryRun) {
     console.log(`Running digest immediately (${dryRun ? 'DRY RUN' : 'LIVE'})...`);
     await runDigest({ dryRun, saveHtml: saveHtml || dryRun });
@@ -29,23 +38,27 @@ async function main() {
     if (!keepAlive) process.exit(0);
   }
 
-  if (!process.env.GMAIL_USER && !dryRun) {
-    console.error('Error: GMAIL_USER not set. Copy .env.example to .env and fill it in.');
-    process.exit(1);
-  }
-
-  console.log(`Daily Digest Bot started. Will send every day at ${hour.toString().padStart(2,'0')}:${minute.toString().padStart(2,'0')} local time.`);
+  console.log(`Daily Digest Bot started. Will send every day at ${hour.toString().padStart(2,'0')}:${minute.toString().padStart(2,'0')} (timezone: ${timezone}).`);
   console.log(`Cron: ${cronExpr}`);
   console.log('Press Ctrl+C to stop.\n');
 
-  cron.schedule(cronExpr, async () => {
+  const task = cron.schedule(cronExpr, async () => {
     console.log(`[cron] Triggered at ${new Date().toLocaleTimeString()}`);
     try {
       await runDigest({ dryRun: false, saveHtml: false });
     } catch (err) {
       console.error('[cron] Digest run failed:', err.message);
     }
-  });
+  }, { timezone });
+
+  // Graceful shutdown
+  function shutdown() {
+    console.log('\n[bot] Shutting down gracefully...');
+    task.stop();
+    process.exit(0);
+  }
+  process.on('SIGTERM', shutdown);
+  process.on('SIGINT', shutdown);
 }
 
 main().catch((err) => {

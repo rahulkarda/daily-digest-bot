@@ -1,64 +1,52 @@
 'use strict';
 
 const fetch = require('node-fetch');
-const cheerio = require('cheerio');
 
 async function fetchGitHubTrending(limit = 6) {
   try {
-    const res = await fetch('https://github.com/trending?since=daily&spoken_language_code=en', {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; DailyDigestBot/1.0)',
-        'Accept': 'text/html',
-      },
-      timeout: 12000,
-    });
+    // Use the GitHub Search API instead of scraping github.com/trending
+    // (the trending page uses CSS selectors that break silently on HTML changes;
+    // the search API is stable, versioned, and documented)
+    const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000)
+      .toISOString()
+      .slice(0, 10); // YYYY-MM-DD
 
+    const url = `https://api.github.com/search/repositories?q=created:>${cutoff}&sort=stars&order=desc&per_page=${limit}`;
+
+    const headers = {
+      'User-Agent': 'digest-bot/1.0',
+      'Accept': 'application/vnd.github.v3+json',
+    };
+    if (process.env.GITHUB_TOKEN) {
+      headers['Authorization'] = `Bearer ${process.env.GITHUB_TOKEN}`;
+    }
+
+    const res = await fetch(url, { headers, timeout: 12000 });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const html = await res.text();
-    const $ = cheerio.load(html);
 
-    const repos = [];
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      throw new Error(`Expected JSON but got content-type: ${contentType}`);
+    }
 
-    $('article.Box-row').each((i, el) => {
-      if (i >= limit) return false;
+    const data = await res.json();
+    const items = (data.items || []).slice(0, limit);
 
-      const nameEl = $(el).find('h2 a');
-      const fullName = nameEl.attr('href')?.replace(/^\//, '') || '';
-      const [owner, name] = fullName.split('/');
-
-      const description = $(el).find('p').text().trim() || 'No description provided.';
-      const language = $(el).find('[itemprop="programmingLanguage"]').text().trim() || null;
-
-      const starsText = $(el)
-        .find('a[href$="/stargazers"]')
-        .last()
-        .text()
-        .trim()
-        .replace(/,/g, '');
-      const totalStars = parseInt(starsText) || 0;
-
-      const starsToday = $(el)
-        .find('span.d-inline-block.float-sm-right')
-        .text()
-        .trim()
-        .replace(/\s+/g, ' ');
-
-      repos.push({
-        title: `${owner}/${name}`,
-        url: `https://github.com/${fullName}`,
-        score: totalStars,
-        starsToday: starsToday || null,
-        language,
-        excerpt: description,
-        source: 'GitHub Trending',
-        section: 'github',
-      });
-    });
+    const repos = items.map((repo) => ({
+      title: repo.full_name,
+      url: repo.html_url,
+      score: repo.stargazers_count,
+      starsToday: null, // Search API does not expose today-only stars
+      language: repo.language || null,
+      excerpt: repo.description || 'No description provided.',
+      source: 'GitHub Trending',
+      section: 'github',
+    }));
 
     console.log(`[github] Fetched ${repos.length} trending repos`);
     return repos;
   } catch (err) {
-    console.warn('[github] Failed to scrape trending:', err.message);
+    console.warn('[github] Failed to fetch trending:', err.message);
     return [];
   }
 }

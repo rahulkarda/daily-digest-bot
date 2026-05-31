@@ -11,7 +11,14 @@ function escapeHtml(str) {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// Only allow http/https URLs in href attributes; replace others with '#'
+function safeUrl(url) {
+  if (typeof url !== 'string') return '#';
+  return /^https?:\/\//i.test(url.trim()) ? url : '#';
 }
 
 function formatScore(item) {
@@ -35,7 +42,7 @@ function renderItem(item, cfg) {
           <tr>
             <td style="padding:16px 20px;">
               <!-- Title -->
-              <a href="${escapeHtml(item.url)}"
+              <a href="${escapeHtml(safeUrl(item.url))}"
                 style="color:#111827;font-size:15px;font-weight:600;text-decoration:none;line-height:1.4;display:block;margin-bottom:6px;">
                 ${escapeHtml(item.title)}
               </a>
@@ -54,9 +61,45 @@ function renderItem(item, cfg) {
                   </td>
                   <td align="right" style="color:#9CA3AF;font-size:11px;white-space:nowrap;">
                     ${escapeHtml(score)}
-                    ${item.section !== 'github' ? `&nbsp;·&nbsp;<a href="${escapeHtml(item.permalink || item.url)}" style="color:#9CA3AF;text-decoration:none;">discuss</a>` : ''}
+                    ${item.section !== 'github' ? `&nbsp;·&nbsp;<a href="${escapeHtml(safeUrl(item.permalink || item.url))}" style="color:#9CA3AF;text-decoration:none;">discuss</a>` : ''}
                   </td>
                 </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>`;
+}
+
+function renderTldr(tldr) {
+  if (!tldr || !Array.isArray(tldr) || !tldr.length) return '';
+  const items = tldr.map((line, i) => `
+    <tr>
+      <td style="padding:0 0 10px 0;display:flex;align-items:flex-start;gap:10px;">
+        <table cellpadding="0" cellspacing="0" border="0" width="100%">
+          <tr>
+            <td valign="top" width="24" style="padding-right:10px;padding-top:1px;">
+              <div style="width:22px;height:22px;background:#312E81;border-radius:50%;text-align:center;line-height:22px;font-size:11px;font-weight:700;color:#A5B4FC;">${i + 1}</div>
+            </td>
+            <td style="color:#1F2937;font-size:13px;line-height:1.6;">${escapeHtml(line)}</td>
+          </tr>
+        </table>
+      </td>
+    </tr>`).join('');
+
+  return `
+    <tr>
+      <td style="padding-bottom:20px;">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0"
+          style="background:linear-gradient(135deg,#F5F3FF,#EFF6FF);border:1px solid #DDD6FE;border-radius:14px;overflow:hidden;">
+          <tr>
+            <td style="padding:20px 24px;">
+              <p style="margin:0 0 12px 0;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#7C3AED;">
+                ✨ Today's Best Picks — TL;DR
+              </p>
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                ${items}
               </table>
             </td>
           </tr>
@@ -99,7 +142,7 @@ function renderSection(items, sectionKey) {
     <tr><td style="border-top:1px solid #F3F4F6;padding-bottom:24px;"></td></tr>`;
 }
 
-function renderEmail({ ai_models = [], ai_news = [], til = [], date, totalItems }) {
+function renderEmail({ ai_models = [], ai_news = [], til = [], tldr = null, date, totalItems }) {
   const dateStr = date || new Date().toLocaleDateString('en-US', {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
   });
@@ -138,6 +181,7 @@ function renderEmail({ ai_models = [], ai_news = [], til = [], date, totalItems 
           <tr>
             <td>
               <table width="100%" cellpadding="0" cellspacing="0" border="0"
+                bgcolor="#1E1B4B"
                 style="background:linear-gradient(135deg,#1E1B4B 0%,#312E81 50%,#1E3A5F 100%);border-radius:16px;overflow:hidden;margin-bottom:20px;">
                 <tr>
                   <td class="header-pad" style="padding:36px 32px;">
@@ -185,6 +229,7 @@ function renderEmail({ ai_models = [], ai_news = [], til = [], date, totalItems 
                   <td style="padding:28px 28px 12px 28px;">
                     <table width="100%" cellpadding="0" cellspacing="0" border="0">
 
+                      ${renderTldr(tldr)}
                       ${renderSection(ai_models, 'ai_models')}
                       ${renderSection(ai_news, 'ai_news')}
                       ${renderSection(til, 'til')}

@@ -36,10 +36,17 @@ async function runDigest({ dryRun = false, saveHtml = false } = {}) {
       ai_models: rawSections.ai_models.map((i) => ({ ...i, summary: i.excerpt || i.title })),
       ai_news:   rawSections.ai_news.map((i)   => ({ ...i, summary: i.excerpt || i.title })),
       til:       rawSections.til.map((i)       => ({ ...i, summary: i.excerpt || i.title })),
+      tldr:      null,
     };
   }
 
-  const totalItems = Object.values(sections).reduce((s, arr) => s + arr.length, 0);
+  const totalItems = (sections.ai_models.length + sections.ai_news.length + sections.til.length);
+
+  // Guard: skip send if all sources failed to return any items
+  if (totalItems === 0) {
+    console.error('[digest] All sources returned 0 items — skipping send to avoid blank email.');
+    return { totalItems: 0, elapsed: ((Date.now() - startTime) / 1000).toFixed(1) };
+  }
 
   // 3. Render HTML
   const date = new Date().toLocaleDateString('en-US', {

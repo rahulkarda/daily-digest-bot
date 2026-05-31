@@ -21,10 +21,10 @@ const SUBREDDITS = [
   { name: 'Damnthatsinteresting',   section: 'til', label: 'r/Damnthatsinteresting' },
 ];
 
-const BROWSER_HEADERS = {
-  'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-  'Accept-Language': 'en-US,en;q=0.5',
+// Compliant bot User-Agent — avoids ToS violation and ban risk from browser impersonation
+const BOT_HEADERS = {
+  'User-Agent': 'digest-bot/1.0 (automated daily digest; contact via repo)',
+  'Accept': 'application/json',
   'Cache-Control': 'no-cache',
 };
 
@@ -33,8 +33,16 @@ const delay = (ms) => new Promise((r) => setTimeout(r, ms));
 async function fetchSubredditJSON(subreddit) {
   const url = `https://old.reddit.com/r/${subreddit.name}/top.json?t=day&limit=10`;
   try {
-    const res = await fetch(url, { headers: BROWSER_HEADERS, timeout: 12000 });
+    const res = await fetch(url, { headers: BOT_HEADERS, timeout: 12000 });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    // Check content-type before parsing to give a meaningful error when Reddit
+    // returns an HTML page (rate-limit/captcha) instead of JSON
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      throw new Error(`Expected JSON but got content-type: ${contentType} — Reddit may be rate-limiting`);
+    }
+
     const json = await res.json();
 
     return json.data.children
@@ -61,7 +69,7 @@ async function fetchSubredditRSS(subreddit) {
   const url = `https://www.reddit.com/r/${subreddit.name}/top.rss?t=day&limit=8`;
   try {
     const res = await fetch(url, {
-      headers: { 'User-Agent': 'DailyDigestBot/1.0' },
+      headers: { 'User-Agent': 'digest-bot/1.0' },
       timeout: 10000,
     });
     if (!res.ok) throw new Error(`RSS HTTP ${res.status}`);
