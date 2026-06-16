@@ -40,9 +40,10 @@ function renderItem(item, cfg) {
     <tr>
       <td style="padding:0 0 16px 0;">
         <table width="100%" cellpadding="0" cellspacing="0" border="0"
+          class="item-card"
           style="background:#FFFFFF;border:1px solid #F0F0F0;border-radius:12px;overflow:hidden;">
           <tr>
-            <td style="padding:16px 20px;">
+            <td class="item-pad" style="padding:16px 20px;">
               <!-- Title -->
               <a href="${escapeHtml(safeUrl(item.url))}"
                 style="color:#111827;font-size:15px;font-weight:600;text-decoration:none;line-height:1.4;display:block;margin-bottom:6px;">
@@ -160,21 +161,23 @@ function renderEmail({ ai_models = [], ai_news = [], til = [], tech = [], github
     body { margin:0; padding:0; background:#F9FAFB; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; }
     a { color: inherit; }
     @media (max-width: 600px) {
-      .container { width: 100% !important; padding: 0 8px !important; }
-      .header-pad { padding: 24px 20px !important; }
+      .outer-pad { padding: 12px 0 !important; }
+      .container { width: 100% !important; padding: 0 !important; }
+      .header-pad { padding: 24px 16px !important; }
       .header-title { font-size: 22px !important; }
       .stories-box { display: none !important; }
       .pills-wrap { display: flex !important; flex-wrap: wrap !important; gap: 6px !important; }
       .pill-cell { display: inline-block !important; padding-right: 0 !important; margin-bottom: 6px !important; }
-      .content-pad { padding: 20px 16px 8px 16px !important; }
-      .item-pad { padding: 14px 16px !important; }
+      .content-pad { padding: 16px 14px 8px 14px !important; }
+      .item-pad { padding: 12px 14px !important; }
+      .item-card { border-radius: 10px !important; }
     }
   </style>
 </head>
 <body style="margin:0;padding:0;background:#F9FAFB;">
   <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#F9FAFB">
     <tr>
-      <td align="center" style="padding:24px 16px;">
+      <td class="outer-pad" align="center" style="padding:24px 16px;">
 
         <!-- Container -->
         <table class="container" width="620" cellpadding="0" cellspacing="0" border="0"
@@ -229,7 +232,7 @@ function renderEmail({ ai_models = [], ai_news = [], til = [], tech = [], github
               <table width="100%" cellpadding="0" cellspacing="0" border="0"
                 style="background:#FFFFFF;border-radius:16px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.08);">
                 <tr>
-                  <td style="padding:28px 28px 12px 28px;">
+                  <td class="content-pad" style="padding:28px 28px 12px 28px;">
                     <table width="100%" cellpadding="0" cellspacing="0" border="0">
 
                       ${renderTldr(tldr)}
