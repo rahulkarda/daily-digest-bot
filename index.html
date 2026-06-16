@@ -1,1 +1,125 @@
-<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Daily Digest Archive</title></head><body><p>Archive initializing...</p></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Digest Archive</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: #F9FAFB;
+      color: #111827;
+      min-height: 100vh;
+    }
+    header {
+      background: linear-gradient(135deg, #1E1B4B 0%, #312E81 50%, #1E3A5F 100%);
+      padding: 48px 24px;
+      text-align: center;
+    }
+    header h1 {
+      color: #fff;
+      font-size: 2.2rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+    header p { color: rgba(255,255,255,0.65); font-size: 1rem; }
+    .search-bar {
+      max-width: 600px;
+      margin: -28px auto 0;
+      padding: 0 16px;
+      position: relative;
+      z-index: 10;
+    }
+    .search-bar input {
+      width: 100%;
+      padding: 14px 20px;
+      border-radius: 12px;
+      border: none;
+      font-size: 1rem;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+      outline: none;
+    }
+    .search-bar input:focus { box-shadow: 0 4px 16px rgba(99,102,241,0.3); }
+    main { max-width: 700px; margin: 40px auto; padding: 0 16px 64px; }
+    .count { color: #6B7280; font-size: 0.85rem; margin-bottom: 16px; }
+    ul { list-style: none; }
+    .entry { margin-bottom: 10px; }
+    .entry-link {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: #fff;
+      border-radius: 12px;
+      padding: 16px 20px;
+      text-decoration: none;
+      color: inherit;
+      border: 1px solid #E5E7EB;
+      transition: box-shadow 0.15s, border-color 0.15s;
+    }
+    .entry-link:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-color: #C7D2FE; }
+    .entry-date {
+      font-size: 0.8rem;
+      color: #6B7280;
+      white-space: nowrap;
+      min-width: 90px;
+    }
+    .entry-title { flex: 1; font-size: 0.95rem; font-weight: 600; }
+    .entry-meta {
+      font-size: 0.75rem;
+      color: #9CA3AF;
+      white-space: nowrap;
+      background: #F3F4F6;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+    .hidden { display: none !important; }
+    .no-results { text-align: center; color: #9CA3AF; padding: 48px 0; font-size: 1rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Daily Digest Archive</h1>
+    <p>Your searchable history — every digest, all in one place.</p>
+  </header>
+  <div class="search-bar">
+    <input type="search" id="search" placeholder="Search digests by date or keyword..." autocomplete="off">
+  </div>
+  <main>
+    <p class="count" id="count">1 digest</p>
+    <ul id="list">
+      
+      <li class="entry" data-title="daily digest — monday, june 16, 2026 (test)" data-date="2026-06-16">
+        <a href="digests/2026-06-16.html" class="entry-link">
+          <span class="entry-date">2026-06-16</span>
+          <span class="entry-title">Daily Digest — Monday, June 16, 2026 (test)</span>
+          <span class="entry-meta">42 stories</span>
+        </a>
+      </li>
+    </ul>
+    <p class="no-results hidden" id="no-results">No digests match your search.</p>
+  </main>
+  <script>
+    const input = document.getElementById('search');
+    const list = document.getElementById('list');
+    const countEl = document.getElementById('count');
+    const noResults = document.getElementById('no-results');
+    const items = Array.from(list.querySelectorAll('.entry'));
+    const total = items.length;
+
+    input.addEventListener('input', () => {
+      const q = input.value.trim().toLowerCase();
+      let visible = 0;
+      items.forEach((li) => {
+        const match = !q || li.dataset.title.includes(q) || li.dataset.date.includes(q);
+        li.classList.toggle('hidden', !match);
+        if (match) visible++;
+      });
+      countEl.textContent = q
+        ? visible + ' result' + (visible !== 1 ? 's' : '') + ' for "' + input.value.trim() + '"'
+        : total + ' digest' + (total !== 1 ? 's' : '');
+      noResults.classList.toggle('hidden', visible > 0);
+    });
+  </script>
+</body>
+</html>
