@@ -6,6 +6,7 @@ const { fetchGitHubTrending } = require('./sources/github');
 const { summarizeAll } = require('./summarize');
 const { renderEmail } = require('./template');
 const { sendDigest } = require('./mailer');
+const { archiveDigest } = require('./archiver');
 const fs = require('fs');
 const path = require('path');
 
@@ -80,7 +81,16 @@ async function runDigest({ dryRun = false, saveHtml = false } = {}) {
     console.log(`[digest] HTML preview saved → ${outPath}`);
   }
 
-  // 5. Send email
+  // 5. Push to GitHub Pages archive (best-effort; failures don't abort the email send)
+  if (!dryRun) {
+    try {
+      await archiveDigest({ html, dateStr: date, totalItems });
+    } catch (err) {
+      console.error('[digest] Archive push failed (non-fatal):', err.message);
+    }
+  }
+
+  // 6. Send email
   if (dryRun) {
     console.log('\n[digest] DRY RUN — email not sent.');
   } else {

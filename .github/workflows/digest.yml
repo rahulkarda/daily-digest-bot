@@ -6,6 +6,9 @@ on:
     - cron: '0 5 * * *'
   workflow_dispatch:  # Manual trigger from GitHub UI
 
+permissions:
+  contents: write   # needed to push to gh-pages branch
+
 jobs:
   send-digest:
     runs-on: ubuntu-latest
@@ -20,10 +23,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Send Daily Digest
+      - name: Send Daily Digest + Archive to GitHub Pages
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
           DIGEST_TO: ${{ secrets.DIGEST_TO }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node index.js --now
