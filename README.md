@@ -9,9 +9,10 @@ A free, automated daily email digest that pulls top content from Reddit, Hacker 
 ## What You Get
 
 A daily email with:
-- **⚡ Tech & Dev** — Top stories from Hacker News + r/programming + r/webdev
-- **🤖 AI & ML** — Best from r/MachineLearning + r/artificial
-- **🔬 Curiosity & Science** — r/todayilearned + r/science + r/explainlikeimfive
+- **🧠 AI Models & Research** — Top posts from r/MachineLearning + r/artificial
+- **🤖 AI News & Lab Updates** — Latest from AI labs and industry news
+- **💡 Today I Learned** — Best of r/todayilearned
+- **🔥 Hacker News** — Top HN stories of the day
 - **⭐ GitHub Trending** — Today's hottest repos with language + star count
 
 Each story gets a 1-sentence AI summary powered by Gemini 1.5 Flash.
@@ -131,7 +132,7 @@ pm2 save
 ## Project Structure
 
 ```
-digest-bot/
+daily-digest-bot/
 ├── src/
 │   ├── sources/
 │   │   ├── reddit.js       # Reddit JSON API fetcher
