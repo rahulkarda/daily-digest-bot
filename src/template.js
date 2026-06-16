@@ -160,8 +160,14 @@ function renderEmail({ ai_models = [], ai_news = [], til = [], tech = [], github
     body { margin:0; padding:0; background:#F9FAFB; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; }
     a { color: inherit; }
     @media (max-width: 600px) {
-      .container { width: 100% !important; padding: 0 12px !important; }
-      .header-pad { padding: 28px 20px !important; }
+      .container { width: 100% !important; padding: 0 8px !important; }
+      .header-pad { padding: 24px 20px !important; }
+      .header-title { font-size: 22px !important; }
+      .stories-box { display: none !important; }
+      .pills-wrap { display: flex !important; flex-wrap: wrap !important; gap: 6px !important; }
+      .pill-cell { display: inline-block !important; padding-right: 0 !important; margin-bottom: 6px !important; }
+      .content-pad { padding: 20px 16px 8px 16px !important; }
+      .item-pad { padding: 14px 16px !important; }
     }
   </style>
 </head>
@@ -188,14 +194,14 @@ function renderEmail({ ai_models = [], ai_news = [], til = [], tech = [], github
                           <p style="color:rgba(255,255,255,0.6);font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;margin:0 0 8px 0;">
                             DAILY DIGEST
                           </p>
-                          <h1 style="color:#FFFFFF;font-size:28px;font-weight:800;margin:0 0 6px 0;line-height:1.2;">
+                          <h1 class="header-title" style="color:#FFFFFF;font-size:28px;font-weight:800;margin:0 0 6px 0;line-height:1.2;">
                             Your Morning Briefing
                           </h1>
                           <p style="color:rgba(255,255,255,0.7);font-size:14px;margin:0;">
                             ${dateStr}
                           </p>
                         </td>
-                        <td align="right" valign="top">
+                        <td class="stories-box" align="right" valign="top">
                           <div style="background:rgba(255,255,255,0.1);border-radius:12px;padding:12px 16px;text-align:center;display:inline-block;">
                             <p style="color:#FFFFFF;font-size:28px;font-weight:800;margin:0;line-height:1;">${totalItems || 0}</p>
                             <p style="color:rgba(255,255,255,0.6);font-size:11px;margin:4px 0 0 0;font-weight:500;">STORIES</p>
@@ -203,16 +209,14 @@ function renderEmail({ ai_models = [], ai_news = [], til = [], tech = [], github
                         </td>
                       </tr>
                     </table>
-                    <!-- Section pills -->
-                    <table cellpadding="0" cellspacing="0" border="0" style="margin-top:20px;">
-                      <tr>
-                        ${ai_models.length ? '<td style="padding-right:8px;"><span style="background:rgba(139,92,246,0.3);color:#C4B5FD;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid rgba(139,92,246,0.4);">🧠 AI Models</span></td>' : ''}
-                        ${ai_news.length ? '<td style="padding-right:8px;"><span style="background:rgba(59,130,246,0.3);color:#93C5FD;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid rgba(59,130,246,0.4);">🤖 AI News</span></td>' : ''}
-                        ${til.length ? '<td style="padding-right:8px;"><span style="background:rgba(16,185,129,0.3);color:#6EE7B7;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid rgba(16,185,129,0.4);">💡 TIL</span></td>' : ''}
-                        ${tech.length ? '<td style="padding-right:8px;"><span style="background:rgba(249,115,22,0.3);color:#FED7AA;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid rgba(249,115,22,0.4);">🔥 HN</span></td>' : ''}
-                        ${github.length ? '<td><span style="background:rgba(107,114,128,0.3);color:#D1D5DB;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid rgba(107,114,128,0.4);">⭐ GitHub</span></td>' : ''}
-                      </tr>
-                    </table>
+                    <!-- Section pills — flex-wrap on mobile -->
+                    <div class="pills-wrap" style="margin-top:20px;display:flex;flex-wrap:wrap;gap:6px;">
+                      ${ai_models.length ? '<span style="background:rgba(139,92,246,0.3);color:#C4B5FD;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid rgba(139,92,246,0.4);white-space:nowrap;">🧠 AI Models</span>' : ''}
+                      ${ai_news.length ? '<span style="background:rgba(59,130,246,0.3);color:#93C5FD;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid rgba(59,130,246,0.4);white-space:nowrap;">🤖 AI News</span>' : ''}
+                      ${til.length ? '<span style="background:rgba(16,185,129,0.3);color:#6EE7B7;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid rgba(16,185,129,0.4);white-space:nowrap;">💡 TIL</span>' : ''}
+                      ${tech.length ? '<span style="background:rgba(249,115,22,0.3);color:#FED7AA;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid rgba(249,115,22,0.4);white-space:nowrap;">🔥 HN</span>' : ''}
+                      ${github.length ? '<span style="background:rgba(107,114,128,0.3);color:#D1D5DB;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid rgba(107,114,128,0.4);white-space:nowrap;">⭐ GitHub</span>' : ''}
+                    </div>
                   </td>
                 </tr>
               </table>
