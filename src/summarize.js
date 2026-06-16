@@ -115,9 +115,10 @@ async function generateTldr(sections) {
     const model = client.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
     const allItems = [
-      ...sections.ai_models,
-      ...sections.ai_news,
-      ...sections.til,
+      ...(sections.ai_models || []),
+      ...(sections.ai_news   || []),
+      ...(sections.til       || []),
+      ...(sections.tech      || []),
     ];
 
     const itemList = allItems
@@ -172,12 +173,28 @@ async function summarizeAll(sections) {
   );
 
   await delay(500);
-  const tldr = await generateTldr({ ai_models: ai_modelsResult, ai_news: ai_newsResult, til: tilResult });
+  const techResult = await summarizeBatch(
+    sections.tech || [],
+    'Hacker News Top Stories',
+  );
+
+  await delay(500);
+  const githubResult = await summarizeGitHub(sections.github || []);
+
+  await delay(500);
+  const tldr = await generateTldr({
+    ai_models: ai_modelsResult,
+    ai_news: ai_newsResult,
+    til: tilResult,
+    tech: techResult,
+  });
 
   return {
     ai_models: ai_modelsResult,
     ai_news: ai_newsResult,
     til: tilResult,
+    tech: techResult,
+    github: githubResult,
     tldr,
   };
 }

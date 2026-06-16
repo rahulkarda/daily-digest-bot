@@ -4,6 +4,8 @@ const SECTIONS_CONFIG = {
   ai_models: { label: 'AI Models & Research', emoji: '🧠', color: '#8B5CF6', light: '#F5F3FF', border: '#DDD6FE' },
   ai_news:   { label: 'AI News & Lab Updates', emoji: '🤖', color: '#3B82F6', light: '#EFF6FF', border: '#BFDBFE' },
   til:       { label: 'Today I Learned', emoji: '💡', color: '#10B981', light: '#ECFDF5', border: '#A7F3D0' },
+  tech:      { label: 'Hacker News', emoji: '🔥', color: '#F97316', light: '#FFF7ED', border: '#FED7AA' },
+  github:    { label: 'GitHub Trending', emoji: '⭐', color: '#6B7280', light: '#F9FAFB', border: '#E5E7EB' },
 };
 
 function escapeHtml(str) {
@@ -142,15 +144,10 @@ function renderSection(items, sectionKey) {
     <tr><td style="border-top:1px solid #F3F4F6;padding-bottom:24px;"></td></tr>`;
 }
 
-function renderEmail({ ai_models = [], ai_news = [], til = [], tldr = null, date, totalItems }) {
+function renderEmail({ ai_models = [], ai_news = [], til = [], tech = [], github = [], tldr = null, date, totalItems }) {
   const dateStr = date || new Date().toLocaleDateString('en-US', {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
   });
-
-  const techSection = ''
-  const aiSection = ''
-  const curiositySection = ''
-  const githubSection = ''
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -211,7 +208,9 @@ function renderEmail({ ai_models = [], ai_news = [], til = [], tldr = null, date
                       <tr>
                         ${ai_models.length ? '<td style="padding-right:8px;"><span style="background:rgba(139,92,246,0.3);color:#C4B5FD;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid rgba(139,92,246,0.4);">🧠 AI Models</span></td>' : ''}
                         ${ai_news.length ? '<td style="padding-right:8px;"><span style="background:rgba(59,130,246,0.3);color:#93C5FD;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid rgba(59,130,246,0.4);">🤖 AI News</span></td>' : ''}
-                        ${til.length ? '<td><span style="background:rgba(16,185,129,0.3);color:#6EE7B7;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid rgba(16,185,129,0.4);">💡 TIL</span></td>' : ''}
+                        ${til.length ? '<td style="padding-right:8px;"><span style="background:rgba(16,185,129,0.3);color:#6EE7B7;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid rgba(16,185,129,0.4);">💡 TIL</span></td>' : ''}
+                        ${tech.length ? '<td style="padding-right:8px;"><span style="background:rgba(249,115,22,0.3);color:#FED7AA;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid rgba(249,115,22,0.4);">🔥 HN</span></td>' : ''}
+                        ${github.length ? '<td><span style="background:rgba(107,114,128,0.3);color:#D1D5DB;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;border:1px solid rgba(107,114,128,0.4);">⭐ GitHub</span></td>' : ''}
                       </tr>
                     </table>
                   </td>
@@ -233,6 +232,8 @@ function renderEmail({ ai_models = [], ai_news = [], til = [], tldr = null, date
                       ${renderSection(ai_models, 'ai_models')}
                       ${renderSection(ai_news, 'ai_news')}
                       ${renderSection(til, 'til')}
+                      ${renderSection(tech, 'tech')}
+                      ${renderSection(github, 'github')}
 
                     </table>
                   </td>
