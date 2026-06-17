@@ -2,8 +2,8 @@ name: Daily Digest
 
 on:
   schedule:
-    # 12pm IST target (-1hr buffer) = 11am IST = 05:30 UTC
-    - cron: '30 5 * * *'
+    # 12pm IST target (-2hr buffer) = 10am IST = 04:30 UTC
+    - cron: '30 4 * * *'
   workflow_dispatch:  # Manual trigger from GitHub UI
 
 permissions:
